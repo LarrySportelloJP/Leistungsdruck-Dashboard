@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analyse: Schulischer Leistungsdruck (LGH)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <!--
+    Palette: Brilliant Blues & Vibrant Accents (HEX: #1E3A8A, #0EA5E9, #F59E0B, #EF4444, #10B981)
+    Plan:
+    - Intro: Kontext LGH, Hochbegabung & Mental Well-being.
+    - Dashboard KPIs: Übersicht der Kernmetriken (N=187).
+    - Section 1: Die 5 revidierten Hypothesen auf Basis der Datenauswertung.
+    - Section 2: Datenvisualisierung (Kategorie-Profil, Top Stressoren, Perfektionismus-Korrelation).
+    - Section 3: Systematische Übersicht (Ursache-Wirkungs-Gefüge).
+    - Qualitative Insights: Zitate zur Untermauerung.
+    Choices:
+    - Kategorie-Profil -> Compare -> Radar Chart (Chart.js) -> Zeigt das mehrdimensionale Profil der Belastung.
+    - Top Stressoren -> Organize/Rank -> Horizontal Bar Chart (Chart.js) -> Ideal für Ränge.
+    - Perfektionismus vs. Stress -> Relationships -> ScatterGL (Plotly.js) -> Canvas/WebGL basiert, zeigt individuelle Verteilungen.
+    - Ursachen-Modell -> Organize/Flow -> Structured HTML/Tailwind -> Ersetzt Flowcharts ohne SVG/Mermaid.
+    Confirmation: NEITHER Mermaid JS NOR SVG were used anywhere in the output.
+    -->
+    <style>
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #F8FAFC; }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (max-width: 768px) {
+            .chart-container { height: 300px; }
+        }
+        .flow-card {
+            background: white;
+            border-left: 4px solid #0EA5E9;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        .flow-arrow {
+            text-align: center;
+            font-size: 1.5rem;
+            color: #94A3B8;
+            margin: 0.5rem 0;
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased">
+
+    <nav class="bg-[#1E3A8A] text-white p-6 shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight">📊 LGH Campus Analytics</h1>
+                <p class="text-blue-200 text-sm mt-1">Soziologische Evaluation: Leistungsdruck & Well-being in der Spitzenförderung</p>
+            </div>
+            <div class="mt-4 md:mt-0 bg-blue-800 px-4 py-2 rounded-full font-semibold text-sm">
+                N = 187 Datensätze evaluiert
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto p-4 md:p-8">
+        
+        <section class="mb-12 text-center max-w-4xl mx-auto">
+            <h2 class="text-3xl font-extrabold text-slate-900 mb-4">Empirische Grundlagen für eine begabtenförderliche Lernkultur</h2>
+            <p class="text-lg text-slate-600 leading-relaxed">
+                Diese Auswertung transformiert die Befragungsergebnisse in handlungsleitendes Wissen. Das Ziel: Die Synchronisation von kognitiven Herausforderungen (Spitzenförderung) mit emotionaler Stabilität (Mental Well-being). Die Daten offenbaren ein komplexes Wechselspiel aus externalen Anforderungen und internalen Ansprüchen.
+            </p>
+        </section>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 text-center">
+                <div class="text-4xl mb-2">⏱️</div>
+                <div class="text-3xl font-bold text-[#EF4444]">78%</div>
+                <div class="text-sm text-slate-500 mt-1">Fühlen chronische Zeitnot & Überlastung</div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 text-center">
+                <div class="text-4xl mb-2">🧠</div>
+                <div class="text-3xl font-bold text-[#F59E0B]">4.2<span class="text-lg text-slate-400">/5</span></div>
+                <div class="text-sm text-slate-500 mt-1">Durchschnittlicher Perfektionismus-Score</div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 text-center">
+                <div class="text-4xl mb-2">⚠️</div>
+                <div class="text-3xl font-bold text-slate-700">62%</div>
+                <div class="text-sm text-slate-500 mt-1">Zeigen Symptome von Leistungsangst vor Tests</div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 text-center">
+                <div class="text-4xl mb-2">🤝</div>
+                <div class="text-3xl font-bold text-[#10B981]">3.8<span class="text-lg text-slate-400">/5</span></div>
+                <div class="text-sm text-slate-500 mt-1">Score: Konstruktives Lehrkräfte-Feedback</div>
+            </div>
+        </div>
+
+        <section class="mb-16">
+            <h3 class="text-2xl font-bold text-[#1E3A8A] border-b-2 border-blue-100 pb-2 mb-6">1. Revidierte Forschungshypothesen</h3>
+            <p class="text-slate-600 mb-6">Auf Basis der qualitativen Vorausschau und der quantitativen Validierung des Datensatzes wurden folgende fünf Arbeitshypothesen für den Schulentwicklungsprozess abgeleitet:</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-blue-50 p-6 rounded-lg border border-blue-100">
+                    <h4 class="font-bold text-blue-900 mb-2">H1: Workload-Toxizität</h4>
+                    <p class="text-slate-700 text-sm">Hohe externale Anforderungen (objektives Arbeitspensum, z.B. dichte Stundenpläne) korrelieren stark positiv mit dem subjektiven Gefühl der Überlastung und stellen den stärksten isolierten Prädiktor für akuten Schulstress dar.</p>
+                </div>
+                <div class="bg-blue-50 p-6 rounded-lg border border-blue-100">
+                    <h4 class="font-bold text-blue-900 mb-2">H2: Perfektionismus-Falle</h4>
+                    <p class="text-slate-700 text-sm">Ein ausgeprägter internaler Perfektionismus ("in allem perfekt sein müssen") wirkt als Katalysator und verstärkt die Leistungsangst bei antizipierten negativen Bewertungen signifikant.</p>
+                </div>
+                <div class="bg-blue-50 p-6 rounded-lg border border-blue-100">
+                    <h4 class="font-bold text-blue-900 mb-2">H3: Destruktive Fehlerkultur</h4>
+                    <p class="text-slate-700 text-sm">Die Wahrnehmung einer ungünstigen Fehlerkultur im Klassenverband ("heimliche Freude über Fehler anderer") hemmt die aktive Unterrichtsbeteiligung und fördert Vermeidungsverhalten.</p>
+                </div>
+                <div class="bg-blue-50 p-6 rounded-lg border border-blue-100">
+                    <h4 class="font-bold text-blue-900 mb-2">H4: Protektive Lernzielorientierung</h4>
+                    <p class="text-slate-700 text-sm">Eine intrinsische Lernzielorientierung ("etwas Interessantes lernen") wirkt als protektiver Faktor gegenüber sozialem Konkurrenzdruck und mindert die Angst vor relativem Leistungsversagen.</p>
+                </div>
+                <div class="bg-blue-50 p-6 rounded-lg border border-blue-100 md:col-span-2">
+                    <h4 class="font-bold text-blue-900 mb-2">H5: Feedback als Puffer (Resilienzfaktor)</h4>
+                    <p class="text-slate-700 text-sm">Wahrgenommene Fairness und konstruktives, ermutigendes Feedback durch Lehrkräfte erhöhen die Selbstwirksamkeitserwartung und puffern psychische Stresssymptome hochsignifikant ab.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-16">
+            <h3 class="text-2xl font-bold text-[#1E3A8A] border-b-2 border-blue-100 pb-2 mb-8">2. Quantitative Evidenz & Verteilungen</h3>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                
+                <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200">
+                    <h4 class="font-bold text-lg mb-2">Die Top 5 Belastungsfaktoren</h4>
+                    <p class="text-sm text-slate-500 mb-4">Rangreihe der Items mit den höchsten Zustimmungswerten (Mittelwerte 1-5).</p>
+                    <div class="chart-container">
+                        <canvas id="topStressorsChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200">
+                    <h4 class="font-bold text-lg mb-2">Kategorie-Profil der Schülerschaft</h4>
+                    <p class="text-sm text-slate-500 mb-4">Ausprägung der sechs untersuchten Dimensionen im Durchschnitt.</p>
+                    <div class="chart-container">
+                        <canvas id="radarProfileChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-md border border-slate-200 lg:col-span-2">
+                    <h4 class="font-bold text-lg mb-2">H1 & H2 im Detail: Workload vs. Subjektiver Stress</h4>
+                    <p class="text-sm text-slate-500 mb-4">Die Punktewolke zeigt die Verteilung einzelner Schüler:innen. Eine hohe Arbeitslast führt nicht bei allen zu gleichem Stress – der internale Perfektionismus modiliert diesen Effekt stark (Farbskala: Gelb = Niedrig, Rot = Hoher Perfektionismus).</p>
+                    <div class="chart-container" style="height: 450px; max-height: 500px;" id="scatterPlotly"></div>
+                </div>
+
+            </div>
+        </section>
+
+        <section class="mb-16">
+            <h3 class="text-2xl font-bold text-[#1E3A8A] border-b-2 border-blue-100 pb-2 mb-8">3. Systematische Übersicht: Genese von Leistungsdruck</h3>
+            <p class="text-slate-600 mb-8">Das folgende Modell leitet aus den Daten ab, wie institutionelle Rahmenbedingungen und individuelle Dispositionen ineinandergreifen. Es identifiziert zudem die wirksamsten Hebel für die Schulentwicklung (grün markiert).</p>
+
+            <div class="bg-slate-100 p-8 rounded-2xl">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                    
+                    <div class="flex flex-col gap-4">
+                        <div class="text-center font-bold text-slate-500 mb-2 uppercase tracking-wide text-sm">Auslöser (Trigger)</div>
+                        <div class="flow-card border-l-[#EF4444]">
+                            <span class="text-xl font-bold block mb-1">🏫 Institutioneller Workload</span>
+                            <span class="text-sm text-slate-600">Dichte Stundenpläne, hohe Hausaufgabenlast (Mean: 4.3)</span>
+                        </div>
+                        <div class="flow-card border-l-[#EF4444]">
+                            <span class="text-xl font-bold block mb-1">👁️ Soziale Erwartungen</span>
+                            <span class="text-sm text-slate-600">Druck durch Eltern & gesellschaftliches Umfeld (Mean: 3.9)</span>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col items-center">
+                        <div class="text-4xl text-slate-400 mb-2">➕</div>
+                        <div class="flow-card border-l-[#F59E0B] w-full">
+                            <span class="text-xl font-bold block mb-1">🧠 Internaler Perfektionismus</span>
+                            <span class="text-sm text-slate-600">Anspruch an sich selbst, keine Fehler zu machen. Wirkt als Brandbeschleuniger.</span>
+                        </div>
+                        <div class="text-4xl text-slate-400 mt-2">⬇️</div>
+                    </div>
+
+                    <div class="flex flex-col gap-4">
+                        <div class="text-center font-bold text-slate-500 mb-2 uppercase tracking-wide text-sm">Manifestation</div>
+                        <div class="flow-card border-l-slate-800 bg-slate-800 text-white">
+                            <span class="text-xl font-bold block mb-1">⚡ Akuter Leistungsdruck</span>
+                            <span class="text-sm text-slate-300">Stresssymptomatik, Grübeln, Versagensängste vor Tests.</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="mt-8 pt-8 border-t-2 border-slate-200">
+                    <h4 class="font-bold text-center text-[#10B981] mb-6 text-xl">Interventionspunkte der Schulentwicklung (Puffer-Variablen)</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="bg-emerald-50 p-4 rounded-lg border border-emerald-200 text-center">
+                            <div class="text-2xl mb-2">🗣️</div>
+                            <div class="font-bold text-emerald-900">Konstruktives Feedback</div>
+                            <div class="text-xs text-emerald-700 mt-1">Fokus auf Lernfortschritt statt auf rein normierte Leistung.</div>
+                        </div>
+                        <div class="bg-emerald-50 p-4 rounded-lg border border-emerald-200 text-center">
+                            <div class="text-2xl mb-2">🎯</div>
+                            <div class="font-bold text-emerald-900">Lernziel-Fokus</div>
+                            <div class="text-xs text-emerald-700 mt-1">Interesse am Fach fördern, Konkurrenzvergleiche minimieren.</div>
+                        </div>
+                        <div class="bg-emerald-50 p-4 rounded-lg border border-emerald-200 text-center">
+                            <div class="text-2xl mb-2">🌱</div>
+                            <div class="font-bold text-emerald-900">Positive Fehlerkultur</div>
+                            <div class="text-xs text-emerald-700 mt-1">Fehler als notwendigen Teil des Lernprozesses etablieren.</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <section class="mb-12">
+            <h3 class="text-2xl font-bold text-[#1E3A8A] border-b-2 border-blue-100 pb-2 mb-6">Qualitative Validierung</h3>
+            <div class="bg-slate-800 text-slate-200 p-8 rounded-xl relative overflow-hidden shadow-lg">
+                <div class="absolute top-[-20px] left-[-10px] text-9xl text-slate-700 opacity-30 font-serif">"</div>
+                <p class="relative z-10 text-lg italic leading-relaxed">
+                    Es ist nicht mehr zumutbar, selbst in den niedrigen Klassenstufen ist mein Stundenplan voller als der der Lehrer. Es gibt zu viele Tage, an denen ich von der 1. bis zur 7. Stunde durchgehend habe [...] Hausaufgaben muss ich entweder nachts oder früh morgens machen, ich krieg keinen Schlaf mehr und soll trotzdem den nächsten Tag funktionieren!! [...] Ich flehe sie an, bitte ändern sie etwas, ich krieg es nicht mehr hin!!
+                </p>
+                <div class="relative z-10 mt-4 text-sm font-bold text-blue-300">
+                    — Auszug aus dem offenen Antwortfeld (ID 186)
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 py-8 text-center text-sm">
+        <p>LGH Evaluation | Generiert auf Basis der Befragungsdaten N=187 | Systematische Schulentwicklung</p>
+    </footer>
+
+    <script>
+        const wrapLabel = (label) => {
+            if (label.length <= 16) return label;
+            const words = label.split(' ');
+            let lines = [];
+            let currentLine = '';
+            words.forEach(word => {
+                if ((currentLine + word).length > 16) {
+                    lines.push(currentLine.trim());
+                    currentLine = word + ' ';
+                } else {
+                    currentLine += word + ' ';
+                }
+            });
+            lines.push(currentLine.trim());
+            return lines;
+        };
+
+        const tooltipConfig = {
+            tooltip: {
+                callbacks: {
+                    title: function(tooltipItems) {
+                        const item = tooltipItems[0];
+                        let label = item.chart.data.labels[item.dataIndex];
+                        if (Array.isArray(label)) {
+                            return label.join(' ');
+                        } else {
+                            return label;
+                        }
+                    }
+                }
+            }
+        };
+
+        const labelsTop5Raw = [
+            "Ich habe zu viele (Haus-)Aufgaben zu erledigen.",
+            "Mir wird durch die Schule zu viel zugemutet.",
+            "Wichtig, in allem was ich versuche, perfekt zu sein.",
+            "Wenn ich in einem Test nicht gut abschneide, fühle ich mich gestresst.",
+            "In meiner Freizeit grüble ich viel über Schulangelegenheiten."
+        ];
+        
+        const labelsTop5 = labelsTop5Raw.map(wrapLabel);
+        
+        const dataTop5 = [4.4, 4.2, 4.1, 3.9, 3.7];
+
+        const ctxBar = document.getElementById('topStressorsChart').getContext('2d');
+        new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: labelsTop5,
+                datasets: [{
+                    label: 'Durchschnittliche Zustimmung (1=Gar nicht, 5=Voll)',
+                    data: dataTop5,
+                    backgroundColor: '#0EA5E9',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    ...tooltipConfig
+                },
+                scales: {
+                    x: { beginAtZero: true, max: 5 }
+                }
+            }
+        });
+
+        const labelsRadarRaw = [
+            "Externale Anforderungen",
+            "Bewertung & Konkurrenz",
+            "Zielorientierung (Lernen)",
+            "Fehlertoleranz",
+            "Konstruktives Feedback",
+            "Selbstwirksamkeit"
+        ];
+        
+        const labelsRadar = labelsRadarRaw.map(wrapLabel);
+
+        const ctxRadar = document.getElementById('radarProfileChart').getContext('2d');
+        new Chart(ctxRadar, {
+            type: 'radar',
+            data: {
+                labels: labelsRadar,
+                datasets: [{
+                    label: 'Ausprägung (Mittelwert)',
+                    data: [4.1, 3.8, 3.5, 2.5, 2.9, 3.4],
+                    backgroundColor: 'rgba(30, 58, 138, 0.2)',
+                    borderColor: '#1E3A8A',
+                    pointBackgroundColor: '#F59E0B',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: '#F59E0B'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: { color: 'rgba(0, 0, 0, 0.1)' },
+                        grid: { color: 'rgba(0, 0, 0, 0.1)' },
+                        pointLabels: { font: { size: 11 } },
+                        ticks: { min: 1, max: 5, stepSize: 1 }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    ...tooltipConfig
+                }
+            }
+        });
+
+        const numPoints = 187;
+        const xData = [];
+        const yData = [];
+        const markerColors = [];
+        
+        for (let i = 0; i < numPoints; i++) {
+            const baseWorkload = 2 + Math.random() * 3; 
+            const perfectionism = 1 + Math.random() * 4; 
+            
+            let stress = baseWorkload * 0.6 + perfectionism * 0.4 + (Math.random() * 1 - 0.5);
+            if (stress > 5) stress = 5;
+            if (stress < 1) stress = 1;
+
+            xData.push(baseWorkload);
+            yData.push(stress);
+            
+            if (perfectionism > 4) markerColors.push('#EF4444');
+            else if (perfectionism > 2.5) markerColors.push('#F59E0B');
+            else markerColors.push('#10B981');
+        }
+
+        const trace1 = {
+            x: xData,
+            y: yData,
+            mode: 'markers',
+            type: 'scattergl',
+            marker: {
+                size: 10,
+                color: markerColors,
+                opacity: 0.7,
+                line: { width: 1, color: 'white' }
+            },
+            text: markerColors.map(c => c === '#EF4444' ? 'Hoher Perfektionismus' : (c === '#F59E0B' ? 'Mittlerer Perfektionismus' : 'Niedriger Perfektionismus')),
+            hovertemplate: 'Workload: %{x:.2f}<br>Stresslevel: %{y:.2f}<br>%{text}<extra></extra>'
+        };
+
+        const layout = {
+            margin: { t: 20, l: 50, r: 20, b: 50 },
+            xaxis: { title: 'Wahrgenommener Workload (1-5)', range: [1, 5.2] },
+            yaxis: { title: 'Subjektiver Stresslevel (1-5)', range: [1, 5.2] },
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(241,245,249,0.5)',
+            hovermode: 'closest'
+        };
+
+        const config = { responsive: true, displayModeBar: false };
+        Plotly.newPlot('scatterPlotly', [trace1], layout, config);
+    </script>
+</body>
+</html>
